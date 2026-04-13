@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brumelia Wonders</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <span class="header-deco"></span>
+        <h1 class="brand">Brumelia Wonders</h1>
+        <p class="tagline">Un aire mágico y encantador</p>
+      </div>
+      
+      <button class="cart-trigger" id="cartTrigger" onclick="toggleCart()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+ 
+  <div class="filters" id="filtersBar">
+    <button class="filter-btn active" onclick="filter('todo', this)">Todo</button>
+    <button class="filter-btn" onclick="filter('maquillaje', this)">Maquillaje</button>
+    <button class="filter-btn" onclick="filter('capilares', this)">Capilares</button>
+    <button class="filter-btn" onclick="filter('skin Care', this)">Skin Care</button>
+    <button class="filter-btn" onclick="filter('corporales', this)">Corporales</button>
+    <input class="search" type="text" placeholder="Buscar producto..."
+           oninput="searchProducts(this.value)" />
+  </div>
+
+
+  <main class="main-layout">
+    <div class="grid" id="grid"></div>
+
+  
+    <aside class="cart-panel" id="cartPanel">
+      <div class="cart-header">
+        <h2 class="cart-title">Tu carrito</h2>
+        <button class="cart-close" onclick="toggleCart()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      
+      <div class="cart-items" id="cartItems">
+        <div class="cart-empty" id="cartEmpty">
+          <span class="cart-empty-icon">🛍️</span>
+          <p>Tu carrito está vacío</p>
+          <small>Agrega productos para comenzar</small>
+        </div>
+      </div>
+
+      
+      <div class="cart-footer" id="cartFooter" style="display:none;">
+        <div class="cart-total-row">
+          <span>Total</span>
+          <span class="cart-total" id="cartTotal">$0</span>
+        </div>
+        <button class="btn-checkout" onclick="openCheckout()">
+          Finalizar compra
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+        <button class="btn-clear" onclick="clearCart()">Vaciar carrito</button>
+      </div>
+    </aside>
+  </main>
+
+  
+  <footer class="site-footer">
+    <p>¿Tienes dudas? Escríbenos directamente</p>
+    <a class="wa-btn" href="https://wa.me/573116285221" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12.05 1.958C6.428 1.958 1.873 6.513 1.873 12.137c0 1.904.512 3.685 1.408 5.218L1.5 22.5l5.296-1.75c1.474.806 3.17 1.272 4.972 1.272h.004c5.621 0 10.176-4.555 10.176-10.179 0-2.717-1.058-5.27-2.979-7.19a10.124 10.124 0 00-6.919-2.695z"/>
+      </svg>
+      Escribir por WhatsApp
+    </a>
+  </footer>
+
+  
+  <div class="overlay" id="checkoutOverlay" onclick="closeCheckout(event)">
+    <div class="modal checkout-modal">
+      <button class="modal-close" onclick="closeCheckout()">×</button>
+
+      <div class="modal-header">
+        <span class="modal-deco"></span>
+        <h3>Completar pedido</h3>
+        <p>Llena tus datos para enviarte el pedido</p>
+      </div>
+
+      
+      <div class="order-summary" id="orderSummary"></div>
+
+      
+      <div class="form-group">
+        <label for="clientName">Nombre completo *</label>
+        <input type="text" id="clientName" placeholder="Tu nombre" />
+      </div>
+
+      <div class="form-group">
+        <label for="clientAddress">Dirección de entrega *</label>
+        <input type="text" id="clientAddress" placeholder="Barrio, dirección..." />
+      </div>
+
+      <div class="form-group">
+        <label for="paymentMethod">Método de pago</label>
+        <select id="paymentMethod">
+          <option value="">Selecciona una opción</option>
+          <option value="Transferencia / Nequi">Transferencia / Nequi / Bancolombia</option>
+          <option value="Efectivo contra entrega">Efectivo contra entrega</option>
+        
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="clientNote">Nota adicional (opcional)</label>
+        <textarea id="clientNote" placeholder="Alguna indicación especial..." rows="2"></textarea>
+      </div>
+
+      <button class="btn-send-wa" onclick="sendToWhatsApp()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12.05 1.958C6.428 1.958 1.873 6.513 1.873 12.137c0 1.904.512 3.685 1.408 5.218L1.5 22.5l5.296-1.75c1.474.806 3.17 1.272 4.972 1.272h.004c5.621 0 10.176-4.555 10.176-10.179 0-2.717-1.058-5.27-2.979-7.19a10.124 10.124 0 00-6.919-2.695z"/>
+        </svg>
+        Enviar pedido por WhatsApp
+      </button>
+    </div>
+  </div>
+
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
