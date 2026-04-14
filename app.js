@@ -1,10 +1,11 @@
 const WA_NUMBER = "573116285221";
 
-
 let products = [];
 let cart = loadCart();
 let currentFilter = "todo";
 let currentSearch = "";
+let currentPage = 1;
+const ITEMS_PER_PAGE = 25;
 
 fetch("products.json")
   .then(res => res.json())
@@ -36,6 +37,7 @@ function showToast(msg, type = "") {
 function filter(cat, btn) {
   currentFilter = cat;
   currentSearch = "";
+  currentPage = 1; // ← agregar
   const input = document.querySelector(".search");
   if (input) input.value = "";
   document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
@@ -43,9 +45,9 @@ function filter(cat, btn) {
   renderGrid();
 }
 
-
 function searchProducts(val) {
   currentSearch = val.toLowerCase();
+  currentPage = 1; // ← agregar
   renderGrid();
 }
 
@@ -110,7 +112,6 @@ function renderGrid() {
   const hayBusqueda = currentSearch.length > 0;
 
   const filtered = products.filter(p => {
-    
     const matchCat =
       hayBusqueda ||
       currentFilter === "todo" ||
@@ -130,10 +131,87 @@ function renderGrid() {
       ? `No se encontraron productos para "<strong>${currentSearch}</strong>"`
       : "No hay productos en esta categoría";
     grid.innerHTML = `<div class="empty">${msg}</div>`;
+    renderPagination(0);
     return;
   }
 
-  grid.innerHTML = filtered.map(buildCard).join("");
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  if (currentPage > totalPages) currentPage = 1;
+
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const slice = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+  grid.innerHTML = slice.map(buildCard).join("");
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  let container = document.getElementById("pagination");
+  if (!container) return;
+
+  if (totalPages <= 1) {
+    container.innerHTML = "";
+    return;
+  }
+
+  let html = "";
+
+  // Botón anterior
+  html += `
+    <button class="page-btn page-nav ${currentPage === 1 ? 'disabled' : ''}"
+      onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+      ‹ Anterior
+    </button>
+  `;
+
+  // Números de página
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 ||
+      i === totalPages ||
+      (i >= currentPage - 2 && i <= currentPage + 2)
+    ) {
+      html += `
+        <button class="page-btn ${i === currentPage ? 'active' : ''}"
+          onclick="goToPage(${i})">${i}</button>
+      `;
+    } else if (i === currentPage - 3 || i === currentPage + 3) {
+      html += `<span class="page-dots">…</span>`;
+    }
+  }
+
+  // Botón siguiente
+  html += `
+    <button class="page-btn page-nav ${currentPage === totalPages ? 'disabled' : ''}"
+      onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+      Siguiente ›
+    </button>
+  `;
+
+  container.innerHTML = html;
+}
+
+function goToPage(page) {
+  const hayBusqueda = currentSearch.length > 0;
+  const filtered = products.filter(p => {
+    const matchCat =
+      hayBusqueda ||
+      currentFilter === "todo" ||
+      p.cat === currentFilter ||
+      (currentFilter === "sale" && p.oldPrice);
+    const matchSearch =
+      !hayBusqueda ||
+      p.name.toLowerCase().includes(currentSearch) ||
+      p.desc.toLowerCase().includes(currentSearch);
+    return matchCat && matchSearch;
+  });
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  if (page < 1 || page > totalPages) return;
+
+  currentPage = page;
+  renderGrid();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function addToCart(id) {
