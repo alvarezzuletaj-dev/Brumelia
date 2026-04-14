@@ -784,3 +784,60 @@ body {
   .price { font-size: 17px; }
   .btn-add { font-size: 9px; padding: 7px 10px; }
 }
+#pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 1.5rem 1.5rem 3rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.page-btn {
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-hover);
+  background: var(--white);
+  color: var(--gray);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.page-btn:hover:not(.active):not(.disabled) {
+  border-color: var(--rose);
+  color: var(--rose);
+  background: var(--rose-pale);
+}
+
+.page-btn.active {
+  background: var(--carbon);
+  color: var(--white);
+  border-color: var(--carbon);
+}
+
+.page-btn.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-nav {
+  min-width: 90px;
+  letter-spacing: 0.5px;
+}
+
+.page-dots {
+  color: var(--gray-light);
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 38px;
+}
+.grid-wrapper {
+  flex: 1;
+  min-width: 0;
+}
