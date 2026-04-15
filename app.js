@@ -37,7 +37,7 @@ function showToast(msg, type = "") {
 function filter(cat, btn) {
   currentFilter = cat;
   currentSearch = "";
-  currentPage = 1; // ← agregar
+  currentPage = 1;
   const input = document.querySelector(".search");
   if (input) input.value = "";
   document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
@@ -47,7 +47,7 @@ function filter(cat, btn) {
 
 function searchProducts(val) {
   currentSearch = val.toLowerCase();
-  currentPage = 1; // ← agregar
+  currentPage = 1;
   renderGrid();
 }
 
@@ -60,11 +60,6 @@ function buildCard(p) {
   const dots = (p.colors || [])
     .map(c => `<div class="color-dot" style="background:${c}"></div>`)
     .join("");
-    
-  const oldPrice = p.oldPrice
-    ? `<span class="price-old">${formatPrice(p.oldPrice)}</span>`
-    : "";
-
 
   const imgHTML = p.imagen
     ? `<img src="${p.imagen}" alt="${p.name}"
@@ -72,7 +67,6 @@ function buildCard(p) {
        <span class="img-fallback" style="display:none;">🛍️</span>`
     : `<span class="img-fallback">🛍️</span>`;
 
-  
   const inCart = cart.some(i => i.id === p.id);
 
   return `
@@ -86,10 +80,7 @@ function buildCard(p) {
         <div class="prod-desc">${p.desc}</div>
         <div class="colors">${dots}</div>
         <div class="footer-row">
-          <div>
-            <span class="price">${formatPrice(p.price)}</span>
-            ${oldPrice}
-          </div>
+          <div></div>
           <button
             class="btn-add ${inCart ? 'added' : ''}"
             id="btn-${p.id}"
@@ -156,7 +147,6 @@ function renderPagination(totalPages) {
 
   let html = "";
 
-  // Botón anterior
   html += `
     <button class="page-btn page-nav ${currentPage === 1 ? 'disabled' : ''}"
       onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
@@ -164,7 +154,6 @@ function renderPagination(totalPages) {
     </button>
   `;
 
-  // Números de página
   for (let i = 1; i <= totalPages; i++) {
     if (
       i === 1 ||
@@ -180,7 +169,6 @@ function renderPagination(totalPages) {
     }
   }
 
-  // Botón siguiente
   html += `
     <button class="page-btn page-nav ${currentPage === totalPages ? 'disabled' : ''}"
       onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
@@ -221,15 +209,12 @@ function addToCart(id) {
   const existing = cart.find(i => i.id === id);
 
   if (existing) {
-    
     existing.qty += 1;
     showToast(`+1 ${product.name.split(" ").slice(0, 3).join(" ")}...`);
   } else {
-    
     cart.push({
       id: product.id,
       name: product.name,
-      price: product.price,
       imagen: product.imagen,
       qty: 1
     });
@@ -240,7 +225,6 @@ function addToCart(id) {
   renderCart();
   updateCartButton(id);
 
-  
   const panel = document.getElementById("cartPanel");
   if (!panel.classList.contains("open")) toggleCart();
 }
@@ -279,16 +263,10 @@ function clearCart() {
   renderCart();
   
   document.querySelectorAll(".btn-add").forEach(btn => {
-    const id = parseInt(btn.id.replace("btn-", ""));
     btn.classList.remove("added");
     btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agregar`;
   });
   showToast("Carrito vaciado");
-}
-
-
-function getTotal() {
-  return cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 }
 
 
@@ -301,39 +279,30 @@ function updateCartButton(id) {
 
 
 function renderCart() {
-  const itemsEl   = document.getElementById("cartItems");
-  const footerEl  = document.getElementById("cartFooter");
-  const emptyEl   = document.getElementById("cartEmpty");
-  const totalEl   = document.getElementById("cartTotal");
-  const countEl   = document.getElementById("cartCount");
+  const itemsEl  = document.getElementById("cartItems");
+  const footerEl = document.getElementById("cartFooter");
+  const totalEl  = document.getElementById("cartTotal");
+  const countEl  = document.getElementById("cartCount");
 
-  
   const totalItems = cart.reduce((s, i) => s + i.qty, 0);
   countEl.textContent = totalItems;
 
   if (cart.length === 0) {
-  itemsEl.innerHTML = `
-  <div class="cart-empty">
-    <span class="cart-empty-icon">🛍️</span>
-    <p>Tu carrito está vacío</p>
-    <small>Agrega productos para comenzar</small>
-  </div>
-`;
-  
+    itemsEl.innerHTML = `
+      <div class="cart-empty">
+        <span class="cart-empty-icon">🛍️</span>
+        <p>Tu carrito está vacío</p>
+        <small>Agrega productos para comenzar</small>
+      </div>
+    `;
+    footerEl.style.display = "none";
+    if (totalEl) totalEl.textContent = "";
+    countEl.textContent = "0";
+    return;
+  }
 
-
-  footerEl.style.display = "none";
-
-  
-  totalEl.textContent = formatPrice(0);
-  countEl.textContent = "0";
-
-  return;
-}
-
-  
   footerEl.style.display = "flex";
-  totalEl.textContent = formatPrice(getTotal());
+  if (totalEl) totalEl.textContent = "";
 
   itemsEl.innerHTML = cart.map(item => {
     const imgHTML = item.imagen
@@ -346,12 +315,6 @@ function renderCart() {
         <div class="cart-item-img">${imgHTML}</div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-price">${formatPrice(item.price * item.qty)}</div>
-          <div class="qty-controls">
-            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
-            <span class="qty-num">${item.qty}</span>
-            <button class="qty-btn" onclick="changeQty(${item.id}, +1)">+</button>
-          </div>
         </div>
         <button class="cart-item-remove" onclick="removeFromCart(${item.id})" title="Eliminar">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -367,10 +330,8 @@ function renderCart() {
 function toggleCart() {
   const panel = document.getElementById("cartPanel");
   panel.classList.toggle("open");
-  
-renderCart();
+  renderCart();
 }
-
 
 
 function saveCart() {
@@ -400,16 +361,10 @@ function openCheckout() {
   const itemsHTML = cart.map(item => `
     <div class="order-item">
       <span>${item.qty}x ${item.name.split(" ").slice(0, 4).join(" ")}...</span>
-      <span>${formatPrice(item.price * item.qty)}</span>
     </div>
   `).join("");
 
-  summaryEl.innerHTML = itemsHTML + `
-    <div class="order-total-line">
-      <span>Total</span>
-      <span class="total-val">${formatPrice(getTotal())}</span>
-    </div>
-  `;
+  summaryEl.innerHTML = itemsHTML;
 
   document.getElementById("checkoutOverlay").classList.add("open");
 }
@@ -427,7 +382,6 @@ function sendToWhatsApp() {
   const payment = document.getElementById("paymentMethod").value;
   const note    = document.getElementById("clientNote").value.trim();
 
-  
   if (!name) {
     showToast("Por favor ingresa tu nombre", "error");
     document.getElementById("clientName").focus();
@@ -439,7 +393,6 @@ function sendToWhatsApp() {
     return;
   }
 
-  // 
   let msg = `*🌸 PEDIDO - Brumelia Wonders 🌸*\n\n`;
   msg += `👤 *Cliente:* ${name}\n`;
   msg += `📍 *Dirección:* ${address}\n`;
@@ -448,43 +401,34 @@ function sendToWhatsApp() {
 
   cart.forEach(item => {
     msg += `• ${item.qty}x ${item.name}\n`;
-    msg += `  └ ${formatPrice(item.price)} c/u = *${formatPrice(item.price * item.qty)}*\n`;
   });
 
-  msg += `\n💰 *TOTAL: ${formatPrice(getTotal())}*`;
   if (note) msg += `\n\n📝 *Nota:* ${note}`;
-  
 
-  
   const url = `https://api.whatsapp.com/send?phone=${WA_NUMBER}&text=${encodeURIComponent(msg)}`;
 
-  
   const confirmed = confirm(
     `¿Confirmas tu pedido?\n\n` +
     `Cliente: ${name}\n` +
-    `Total: ${formatPrice(getTotal())}\n\n` +
+    `Productos: ${cart.reduce((s, i) => s + i.qty, 0)}\n\n` +
     `Se abrirá WhatsApp con tu pedido listo.`
   );
 
   if (!confirmed) return;
 
- 
   window.open(url, "_blank");
 
-  
   cart = [];
   saveCart();
   renderCart();
   closeCheckout();
   toggleCart();
 
-  
   document.getElementById("clientName").value    = "";
   document.getElementById("clientAddress").value = "";
   document.getElementById("paymentMethod").value = "";
   document.getElementById("clientNote").value    = "";
 
-  
   document.querySelectorAll(".btn-add").forEach(btn => {
     btn.classList.remove("added");
     btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agregar`;
@@ -494,12 +438,10 @@ function sendToWhatsApp() {
 }
 
 
-
 document.addEventListener("DOMContentLoaded", () => {
   renderGrid(); 
   renderCart();  
 
-  
   if (cart.length > 0) {
     showToast(`Tienes ${cart.length} producto(s) en tu carrito 🛍️`);
   }
